@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 // props 타입 정의
 interface MainBottomProps {
-  jumsu: number;
+  $jumsu: number;
 }
 
 const getScoreColor = (score: number) => {
@@ -24,7 +24,7 @@ export const S = {
 
     MainTitleWrapper: styled.div`
         display: flex;
-        width: 80%;
+        width: 100%;
         border-raidus:10px;
         border: 1pxsolid black;
         padding: 15px;
@@ -46,7 +46,7 @@ export const S = {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 30%;
+        width: 20%;
         height: 100%;
         border-radius:10px;
         border: 1px solid black;
@@ -92,7 +92,7 @@ export const S = {
             text-align: center;
             font-size: 50px;
             margin: 10px 0;
-            color: ${props => getScoreColor(props.jumsu)};
+            color: ${props => getScoreColor(props.$jumsu)};
             span {
                 color: black;
             }

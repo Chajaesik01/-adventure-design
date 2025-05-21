@@ -9,31 +9,40 @@ import { getTodayDateKST } from '../../utils/getTodayDateKST';
 import chest from '../../assets/chest.png';
 import {S} from './StyledMobile'
 import { LoadingContainer, Spinner } from '../../loading/Loading';
-
+import { useNavigate } from 'react-router-dom';
 const Mobile = () => {
   let exerciseName = '턱걸이';
   //let exerciseName = '팔굽혀펴기';
   const date = getTodayDateKST();
+  const navigate = useNavigate();
 
   const { sets: fetchedSets, loading, saveSets, deleteSets } = useExerciseRecord(
     exerciseName,
     date
   );
-  const [sets, setSets] = useState<(ExerciseSet & { id: number; setNumber: number })[]>([]);
+  const [sets, setSets] = useState<(ExerciseSet & { id: number; setNumber: number })[]>([
+    { id: 1, setNumber: 1, weight: 0, reps: 0, rest: 0 }
+  ]);
   const [jumsu, setJumsu] = useState<number>(0);
 
-  setJumsu(70)
+
 
 useEffect(() => {
-  if (!loading) {
+  if (!loading && fetchedSets && fetchedSets.length > 0) {
+    // 서버에서 데이터가 있는 경우
     const initialized = fetchedSets.map((set: ExerciseSet, index: number) => ({
       id: index + 1,
       setNumber: index + 1,
       weight: set.weight || 0,
-      reps: set.reps,
-      rest: set.rest,
+      reps: set.reps || 0,
+      rest: set.rest || 0,
     }));
     setSets(initialized);
+    setJumsu(0);
+  } else if (!loading && (!fetchedSets || fetchedSets.length === 0)) {
+    // 서버에서 데이터가 없는 경우 기본 세트 하나 설정
+    setSets([{ id: 1, setNumber: 1, weight: 0, reps: 0, rest: 0 }]);
+    setJumsu(0);
   }
 }, [fetchedSets, loading]);
 
@@ -83,6 +92,7 @@ useEffect(() => {
     try {
       await saveSets(exerciseName,sets.map(({ weight, reps, rest }) => ({ weight, reps, rest })));
       toastService.showSuccessSaveToast();
+      navigate("/")
     } catch (error) {
       console.error(error);
       toastService.showErrorToast();
@@ -98,6 +108,10 @@ useEffect(() => {
     }
   };
 
+  const handleMoveMain = () =>{
+    navigate("/");
+  }
+
   if (loading){
     return(
       <LoadingContainer>
@@ -111,7 +125,7 @@ useEffect(() => {
       <S.MobileContainer>
         <S.HeaderContainer>
           <S.ExcerName>{exerciseName}</S.ExcerName>
-          <S.StyledMdOutlineCancel as={MdOutlineCancel} />
+          <S.StyledMdOutlineCancel as={MdOutlineCancel} onClick = {handleMoveMain} />
         </S.HeaderContainer>
 
         <S.MiddleContainer>

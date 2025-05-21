@@ -1,14 +1,19 @@
 import {S} from './StyledMain'
+import {useNavigate} from 'react-router-dom';
 const Main = () => {
 
     const jumsu = 70;
+    const navigate = useNavigate();
+    const handleMoveMobile = () => {
+        navigate('/mobile')
+    }
   return (
     <S.MainWraper>
         <S.MainTitleWrapper>
             <S.MainTitle>
                 <h3>2025년 5월 <br/>운동 요약</h3>
             </S.MainTitle>
-            <S.MainMoveButton>
+            <S.MainMoveButton onClick = {handleMoveMobile}>
                 운동하기
             </S.MainMoveButton>
         </S.MainTitleWrapper>
@@ -19,7 +24,7 @@ const Main = () => {
                 🏃<span>3</span>일동안 꾸준히 운동하고 있어요<br/>
             </p>
         </S.MainHeader>
-        <S.MainBottom jumsu = {jumsu}>
+        <S.MainBottom $jumsu = {jumsu}>
             <h3>평균 근활성 점수</h3>가 <br/>
             저번 운동에 비해서 이만큼이나증가했어요!<br/>
             <p>턱걸이</p>
