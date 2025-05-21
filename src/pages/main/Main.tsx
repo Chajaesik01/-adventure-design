@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {S} from './StyledMain'
 const Main = () => {
 

@@ -14,7 +14,6 @@ const Mobile = () => {
   let exerciseName = '턱걸이';
   //let exerciseName = '팔굽혀펴기';
   const date = getTodayDateKST();
-  let showImg = null;
 
   const { sets: fetchedSets, loading, saveSets, deleteSets } = useExerciseRecord(
     exerciseName,
@@ -22,6 +21,8 @@ const Mobile = () => {
   );
   const [sets, setSets] = useState<(ExerciseSet & { id: number; setNumber: number })[]>([]);
   const [jumsu, setJumsu] = useState<number>(0);
+
+  setJumsu(70)
 
 useEffect(() => {
   if (!loading) {

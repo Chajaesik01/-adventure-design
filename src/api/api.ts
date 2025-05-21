@@ -36,7 +36,7 @@ const useExerciseRecord = (
   targetDate: string
 ): UseExerciseRecordResult => {
   const [sets, setSets] = useState<ExerciseSet[]>([])
-  const [jumsu, setJumsu] = useState<number>(0)
+  //const [jumsu, setJumsu] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
 
   // 1. 데이터 불러오기
@@ -48,7 +48,7 @@ const useExerciseRecord = (
         const snapshot = await get(exercisesRef)
         if (snapshot.exists()) {
           const data = snapshot.val() as Record<string, ExerciseItem>
-          const keys = Object.keys(data)
+          //const keys = Object.keys(data)
           const exerciseList = Object.values(data)
 
           const targetExercise = exerciseList.find(ex => ex.name === exerciseName)
