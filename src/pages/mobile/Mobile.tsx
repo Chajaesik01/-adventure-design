@@ -8,9 +8,11 @@ import toastService from '../../utils/toastService';
 import { getTodayDateKST } from '../../utils/getTodayDateKST';
 import chest from '../../assets/chest.png';
 import {S} from './StyledMobile'
+import { LoadingContainer, Spinner } from '../../loading/Loading';
+
 const Mobile = () => {
-  //let exerciseName = '턱걸이';
-  let exerciseName = '팔굽혀펴기';
+  let exerciseName = '턱걸이';
+  //let exerciseName = '팔굽혀펴기';
   const date = getTodayDateKST();
   let showImg = null;
 
@@ -27,12 +29,18 @@ useEffect(() => {
       id: index + 1,
       setNumber: index + 1,
       weight: set.weight || 0,
-      reps: set.reps || 0,
-      rest: set.rest || 0,
+      reps: set.reps,
+      rest: set.rest,
     }));
     setSets(initialized);
   }
 }, [fetchedSets, loading]);
+
+// 점수 실시간 측정 및 계산
+
+useEffect(() => {
+
+},[jumsu])
 
   const handleWeightChange = (id: number, newValue: number) => {
     setSets(prev =>
@@ -89,7 +97,13 @@ useEffect(() => {
     }
   };
 
-  if (loading) return <div>로딩 중...</div>;
+  if (loading){
+    return(
+      <LoadingContainer>
+        <Spinner/>        
+      </LoadingContainer>
+    )
+  }
 
   return (
     <S.MobileWrapper>
@@ -104,7 +118,7 @@ useEffect(() => {
             <img src={exerciseName === '턱걸이' ? back : chest} alt={exerciseName === '턱걸이' ? '턱걸이' : '팔굽혀펴기'} />
           </S.ImageContainer>
           <S.DataContainer>
-            근활성도 점수
+            평균<br/>근활성 점수
             <S.JumsuContainer>
               <span>{jumsu}</span>
               <p>점</p>
@@ -145,7 +159,7 @@ useEffect(() => {
         </S.SetWrapper>
 
         <S.BottomButtonContainer>
-          <S.DeleteButtonContainer onClick={handleDeleteAll}>삭제</S.DeleteButtonContainer>
+          <S.DeleteButtonContainer onClick={handleDeleteAll}>초기화</S.DeleteButtonContainer>
           <S.AddButtonContainer onClick={handleSave}>저장</S.AddButtonContainer>
         </S.BottomButtonContainer>
       </S.MobileContainer>

@@ -1,15 +1,6 @@
-import { useEffect, useState } from 'react'
 import styled  from 'styled-components'
-import back from './../../assets/back1.png'
 import { FaCirclePlus, FaTrashCan } from "react-icons/fa6";
 import { MdOutlineCancel } from "react-icons/md";
-import { type ExerciseSet } from '../../api/api';
-import useExerciseRecord from '../../api/api';
-import toastService from '../../utils/toastService';
-import { getTodayDateKST } from '../../utils/getTodayDateKST';
-import chest from '../../assets/chest.png';
-//import chest from './../../assets/chest.png';
-//import logo from '../../assets/logo.png'
 
 export const S = {
     MobileWrapper: styled.div`
@@ -20,24 +11,24 @@ export const S = {
         align-items: center;
         overflow: hidden;
     `,
-      MobileContainer: styled.div`
-          width: 100%;
-          height: 100vh;
-          background-color: #F2F2F7;
-          position: relative;
-          padding: 100px 0 100px 0;
-          overflow-y: auto;
-      `,
-HeaderContainer: styled.div`
-    display: flex;
-    width: 90%;
-    height: auto;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 5%;
-    margin: 0 auto;
-    background-color: #F2F2F7;
-`,
+    MobileContainer: styled.div`
+        width: 100%;
+        height: 100%; 
+        background-color: #F2F2F7;
+        position: relative;
+        padding: 60px 0 100px 0; 
+        overflow-y: auto; 
+    `,
+    HeaderContainer: styled.div`
+        display: flex;
+        width: 90%;
+        height: auto;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 5%;
+        margin: 0 auto;
+        background-color: #F2F2F7;
+    `,
     ExcerName: styled.div`
         width: auto;
         height: auto;
@@ -72,6 +63,8 @@ HeaderContainer: styled.div`
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        text-align: center;
+
         font-size: 24px;
         font-weight: 700;
     `,
@@ -118,6 +111,7 @@ HeaderContainer: styled.div`
       min-height: 25vh;
       padding: 0 5%;
       margin: 20px auto;
+      flex-grow: 1;
     `,
     
     SetContainer: styled.div`
@@ -238,5 +232,4 @@ BottomButtonContainer: styled.div`
       font-size: 24px;
       cursor: pointer;
     `,
-
 }

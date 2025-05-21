@@ -36,6 +36,7 @@ const useExerciseRecord = (
   targetDate: string
 ): UseExerciseRecordResult => {
   const [sets, setSets] = useState<ExerciseSet[]>([])
+  const [jumsu, setJumsu] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
 
   // 1. 데이터 불러오기
@@ -71,6 +72,8 @@ const useExerciseRecord = (
 
     fetchData()
   }, [exerciseName, targetDate])
+
+  
 
   // 2. 저장 함수
   const saveSets = async (name:string, newSets: ExerciseSet[]) => {
