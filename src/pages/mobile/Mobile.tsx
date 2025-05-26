@@ -9,15 +9,19 @@ import { getTodayDateKST } from '../../utils/getTodayDateKST';
 import chest from '../../assets/chest.png';
 import {S} from './StyledMobile'
 import { LoadingContainer, Spinner } from '../../loading/Loading';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 const Mobile = () => {
-  let exerciseName = '턱걸이';
   //let exerciseName = '팔굽혀펴기';
   const date = getTodayDateKST();
   const navigate = useNavigate();
+const location = useLocation();
+  const { exerciseName } = location.state || {};
+
+  const name = exerciseName; 
+
 
   const { sets: fetchedSets, loading, saveSets, deleteSets } = useExerciseRecord(
-    exerciseName,
+    name,
     date
   );
   const [sets, setSets] = useState<(ExerciseSet & { id: number; setNumber: number })[]>([
@@ -90,7 +94,7 @@ useEffect(() => {
 
   const handleSave = async () => {
     try {
-      await saveSets(exerciseName,sets.map(({ weight, reps, rest }) => ({ weight, reps, rest })));
+      await saveSets(name,sets.map(({ weight, reps, rest }) => ({ weight, reps, rest })));
       toastService.showSuccessSaveToast();
       navigate("/")
     } catch (error) {
@@ -124,13 +128,13 @@ useEffect(() => {
     <S.MobileWrapper>
       <S.MobileContainer>
         <S.HeaderContainer>
-          <S.ExcerName>{exerciseName}</S.ExcerName>
+          <S.ExcerName>{name}</S.ExcerName>
           <S.StyledMdOutlineCancel as={MdOutlineCancel} onClick = {handleMoveMain} />
         </S.HeaderContainer>
 
         <S.MiddleContainer>
           <S.ImageContainer>
-            <img src={exerciseName === '턱걸이' ? back : chest} alt={exerciseName === '턱걸이' ? '턱걸이' : '팔굽혀펴기'} />
+            <img src={name === '턱걸이' ? back : chest} alt={name === '턱걸이' ? '턱걸이' : '팔굽혀펴기'} />
           </S.ImageContainer>
           <S.DataContainer>
             평균<br/>근활성 점수

@@ -26,7 +26,7 @@ export const S = {
         justify-content: space-between;
         align-items: center;
         padding: 0 5%;
-        margin: 0 auto;
+        margin-top: 1vh;
         background-color: #F2F2F7;
     `,
     ExcerName: styled.div`
