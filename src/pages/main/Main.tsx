@@ -56,7 +56,6 @@ const Main = () => {
                 <h4><span>26 → </span>{jumsu}</h4>
             </S.MainBottom>
 
-            {/* ExerciseModal 컴포넌트 */}
             <ExerciseModal 
                 isOpen={isOpen} 
                 onClose={handleCloseModal}

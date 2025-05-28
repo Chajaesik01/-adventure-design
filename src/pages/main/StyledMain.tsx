@@ -18,7 +18,7 @@ export const S = {
         width: 100%;
         height: 100vh;
         flex-direction: column;
-        padding: 20px;
+   
         gap: 6%;
     `,
 
@@ -66,6 +66,7 @@ export const S = {
         border-radius: 10px;
         border: 1px solid black;
         padding: 15px;
+        margin-left: 4vw;
         
         span {
             font-size: 30px;
@@ -81,6 +82,7 @@ export const S = {
         border: 1px solid black;
         padding: 15px;
         gap: 0%;
+        margin-left: 4vw;
 
         h3 {
             font-size: 30px;
