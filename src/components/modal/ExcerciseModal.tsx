@@ -17,6 +17,7 @@ const ModalOverlay = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     z-index: 1;
 `;
 
@@ -26,6 +27,7 @@ const ModalContainer = styled.div`
     padding: 24px;
     width: 75%;
     height: 40vh;
+    margin-right: 5vw;
 
 `;
 
@@ -123,6 +125,8 @@ const ExerciseModal = ({ isOpen, onClose, setExerciseName }: ExerciseModalProps)
             document.body.style.overflow = 'unset';
         };
     }, [isOpen, onClose]);
+
+
 
     if (!isOpen) return null;
 

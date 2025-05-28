@@ -1,125 +1,226 @@
 import { useEffect, useState } from 'react'
-import back from './../../assets/back1.png'
-import { FaCirclePlus, FaTrashCan } from "react-icons/fa6";
-import { MdOutlineCancel } from "react-icons/md";
-import { type ExerciseSet } from '../../api/api';
-import useExerciseRecord from '../../api/api';
-import toastService from '../../utils/toastService';
-import { getTodayDateKST } from '../../utils/getTodayDateKST';
-import chest from '../../assets/chest.png';
-import {S} from './StyledMobile'
-import { LoadingContainer, Spinner } from '../../loading/Loading';
-import { useNavigate, useLocation } from 'react-router-dom';
+import back from '../../assets/back1.png'
+import chest from '../../assets/chest.png'
+import { FaCirclePlus, FaTrashCan, FaPlay, FaStop } from 'react-icons/fa6'
+import { MdOutlineCancel } from 'react-icons/md'
+import { FaCheck } from 'react-icons/fa'
+import { useNavigate, useLocation } from 'react-router-dom'
+import useExerciseRecord, { type ExerciseSet } from '../../api/api'
+import toastService from '../../utils/toastService'
+import { getTodayDateKST } from '../../utils/getTodayDateKST'
+import { S } from './StyledMobile'
+import { LoadingContainer, Spinner } from '../../loading/Loading'
+import { useDistanceData } from '../../api/useDistanceData'
+import { useJumsuData } from '../../api/useJumsuData'
+
+// 운동 상태 타입 정의
+type ExerciseStatus = 'ready' | 'playing' | 'completed'
+
+interface SetItem extends ExerciseSet {
+  id: number
+  setNumber: number
+  status: ExerciseStatus
+}
+
 const Mobile = () => {
-  //let exerciseName = '팔굽혀펴기';
-  const date = getTodayDateKST();
-  const navigate = useNavigate();
-const location = useLocation();
-  const { exerciseName } = location.state || {};
-
-  const name = exerciseName; 
-
+  const date = getTodayDateKST()
+  const navigate = useNavigate()
+  const locationState = useLocation().state as any
+  const exerciseName = locationState?.exerciseName as string
 
   const { sets: fetchedSets, loading, saveSets, deleteSets } = useExerciseRecord(
-    name,
-    date
-  );
-  const [sets, setSets] = useState<(ExerciseSet & { id: number; setNumber: number })[]>([
-    { id: 1, setNumber: 1, weight: 0, reps: 0, rest: 0 }
-  ]);
-  const [jumsu, setJumsu] = useState<number>(0);
+    exerciseName,
+    date,
+  )
 
+  const { distance } = useDistanceData();
+  const { jumsu } = useJumsuData();
 
+  const [sets, setSets] = useState<SetItem[]>([])
+  const [prevDistance, setPrevDistance] = useState<number>(0)
 
-useEffect(() => {
-  if (!loading && fetchedSets && fetchedSets.length > 0) {
-    // 서버에서 데이터가 있는 경우
-    const initialized = fetchedSets.map((set: ExerciseSet, index: number) => ({
-      id: index + 1,
-      setNumber: index + 1,
-      weight: set.weight || 0,
-      reps: set.reps || 0,
-      rest: set.rest || 0,
-    }));
-    setSets(initialized);
-    setJumsu(0);
-  } else if (!loading && (!fetchedSets || fetchedSets.length === 0)) {
-    // 서버에서 데이터가 없는 경우 기본 세트 하나 설정
-    setSets([{ id: 1, setNumber: 1, weight: 0, reps: 0, rest: 0 }]);
-    setJumsu(0);
+  // 처음 랜더링시
+  useEffect(() => {
+    if (loading) return
+
+    const initial: SetItem[] = (fetchedSets.length
+      ? fetchedSets
+      : [{ reps: 0, weight: 0, rest: 0 }]
+    ).map((s, idx) => ({
+      id: idx + 1,
+      setNumber: idx + 1,
+      weight: s.weight,
+      reps: s.reps,
+      rest: s.rest,
+      status: 'ready', // 초기 상태는 ready
+    }))
+
+    setSets(initial)
+  }, [loading])
+
+  // ── 2) distance 값 변경 감지하여 playing 상태 세트의 reps 증가 ─────────────────
+  useEffect(() => {
+    // distance가 0이 아니고, 이전 값과 다를 때만 실행
+    if (distance > 0 && distance !== prevDistance) {
+      
+      setSets(prev => {
+        const playingSet = prev.find(s => s.status === 'playing')
+        
+        if (playingSet) {
+    
+          return prev.map(s =>
+            s.id === playingSet.id 
+              ? { ...s, reps: s.reps + 1 }
+              : s
+          )
+        } else {
+          return prev
+        }
+      })
+      
+      // 현재 distance 값을 이전 값으로 저장
+      setPrevDistance(distance)
+    }
+  }, [distance, prevDistance])
+
+  // ── 3) 초기 distance 값 설정 ─────────────────────────
+  useEffect(() => {
+    if (distance > 0 && prevDistance === 0) {
+      setPrevDistance(distance)
+    }
+  }, [distance, prevDistance])
+
+  const handleStartSet = (id: number) => {
+    setSets(prev => 
+      prev.map(s => 
+        s.id === id 
+          ? { ...s, status: 'playing' as ExerciseStatus }
+          : s.status === 'playing' 
+            ? { ...s, status: 'ready' as ExerciseStatus }
+            : s
+      )
+    )
   }
-}, [fetchedSets, loading]);
 
-// 점수 실시간 측정 및 계산
+  // ── 운동 완료 (Check 버튼) ─────────────────────────
+  const handleCompleteSet = (id: number) => {
+    setSets(prev => {
+      const updated = prev.map(s =>
+        s.id === id ? { ...s, status: 'completed' as ExerciseStatus } : s
+      )
+      
+      const nextSet = updated
+        .filter(s => s.status === 'ready')
+        .sort((a, b) => a.id - b.id)[0]
+      
+      if (nextSet) {
+        return updated.map(s =>
+          s.id === nextSet.id ? { ...s, reps: s.reps } : s
+        )
+      }
+      
+      return updated
+    })
+  }
 
-useEffect(() => {
-
-},[jumsu])
-
-  const handleWeightChange = (id: number, newValue: number) => {
+  const handleWeightChange = (id: number, value: number) =>
     setSets(prev =>
-      prev.map(set => (set.id === id ? { ...set, weight: newValue } : set))
-    );
-  };
+      prev.map(s => (s.id === id ? { ...s, weight: value } : s))
+    )
 
-  const handleRepsChange = (id: number, newValue: number) => {
+  const handleRepsChange = (id: number, value: number) =>
     setSets(prev =>
-      prev.map(set => (set.id === id ? { ...set, reps: newValue } : set))
-    );
-  };
+      prev.map(s => (s.id === id ? { ...s, reps: value } : s))
+    )
 
   const handleAddSet = () => {
-    const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0, rest: 0 };
-    const newId = sets.length > 0 ? sets[sets.length - 1].id + 1 : 1;
-
-    setSets(prev => [
-      ...prev,
-      {
+    setSets(prev => {
+      const last = prev[prev.length - 1]
+      const newId = last ? last.id + 1 : 1
+      const added: SetItem = {
         id: newId,
         setNumber: prev.length + 1,
-        weight: lastSet.weight,
-        reps: lastSet.reps,
-        rest: lastSet.rest,
-      },
-    ]);
-  };
+        weight: last?.weight ?? 0,
+        reps: 0,
+        rest: last?.rest ?? 0,
+        status: 'ready',
+      }
+      return [...prev, added]
+    })
+  }
 
   const handleDeleteSet = (id: number) => {
-    const filtered = sets.filter(set => set.id !== id);
-    setSets(
-      filtered.map((set, index) => ({ ...set, setNumber: index + 1 }))
-    );
-    //toastService.showCustomSuccessToast('세트가 삭제 되었어요!');
-  };
+    setSets(prev => {
+      const filtered = prev.filter(s => s.id !== id)
+      const reindexed = filtered.map((s, idx) => ({
+        ...s,
+        setNumber: idx + 1,
+      }))
+      return reindexed
+    })
+  }
 
   const handleSave = async () => {
     try {
-      await saveSets(name,sets.map(({ weight, reps, rest }) => ({ weight, reps, rest })));
-      toastService.showSuccessSaveToast();
-      navigate("/")
-    } catch (error) {
-      console.error(error);
-      toastService.showErrorToast();
+      await saveSets(
+        exerciseName,
+        sets.map(({ weight, reps, rest }) => ({ weight, reps, rest }))
+      )
+      toastService.showSuccessSaveToast()
+      navigate('/')
+    } catch (err) {
+      console.error('저장 중 에러:', err)
+      toastService.showErrorToast()
     }
-  };
-
-  const handleDeleteAll = async () => {
-    try {
-      await deleteSets();
-      setSets([]);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleMoveMain = () =>{
-    navigate("/");
   }
 
-  if (loading){
-    return(
+  const handleDeleteAll = async () => {
+    await deleteSets()
+    setSets([])
+  }
+
+  const handleBack = () => navigate('/')
+
+  // 상태별 아이콘 렌더링 함수
+  const renderStatusIcons = (set: SetItem) => {
+    switch (set.status) {
+      case 'ready':
+        return (
+          <S.StyledFaPlayIcon
+            as={FaPlay}
+            onClick={() => handleStartSet(set.id)}
+            style={{ cursor: 'pointer', color: 'blue' }}
+            title="운동 시작"
+          />
+        )
+      case 'playing':
+        return (
+          <>
+            <S.StyledFaStopIcon
+              as={FaStop}
+              onClick={() => handleCompleteSet(set.id)}
+              style={{ cursor: 'pointer', color: 'orange', marginRight: 8 }}
+              title="운동 중지"
+            />
+          </>
+        )
+      case 'completed':
+        return (
+          <S.StyledCheckIcon
+            as={FaCheck}
+            style={{ color: 'green' }}
+            title="완료됨"
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  if (loading) {
+    return (
       <LoadingContainer>
-        <Spinner/>        
+        <Spinner />
       </LoadingContainer>
     )
   }
@@ -128,16 +229,20 @@ useEffect(() => {
     <S.MobileWrapper>
       <S.MobileContainer>
         <S.HeaderContainer>
-          <S.ExcerName>{name}</S.ExcerName>
-          <S.StyledMdOutlineCancel as={MdOutlineCancel} onClick = {handleMoveMain} />
+          <S.ExcerName>{exerciseName}</S.ExcerName>
+          <S.StyledMdOutlineCancel as={MdOutlineCancel} onClick={handleBack} />
         </S.HeaderContainer>
 
         <S.MiddleContainer>
           <S.ImageContainer>
-            <img src={name === '턱걸이' ? back : chest} alt={name === '턱걸이' ? '턱걸이' : '팔굽혀펴기'} />
+            <img
+              src={exerciseName === '턱걸이' ? back : chest}
+              alt={exerciseName}
+            />
           </S.ImageContainer>
           <S.DataContainer>
-            평균<br/>근활성 점수
+            평균<br />
+            근활성 점수
             <S.JumsuContainer>
               <span>{jumsu}</span>
               <p>점</p>
@@ -151,39 +256,60 @@ useEffect(() => {
         </S.AddExcerContainer>
 
         <S.SetWrapper>
-          {sets.map(set => (
-            <S.SetContainer key={set.id}>
-              <S.SetNumber>{set.setNumber}세트</S.SetNumber>
+          {sets.map(s => (
+            <S.SetContainer key={s.id} style={{
+              // playing 상태인 세트를 시각적으로 강조
+              backgroundColor: s.status === 'playing' ? '#e3f2fd' : 'transparent',
+              border: s.status === 'playing' ? '2px solid #2196f3' : '1px solid #ccc'
+            }}>
+              <S.SetNumber>{s.setNumber}세트</S.SetNumber>
+
               <S.WeightValue>
                 <S.InputField
                   type="number"
-                  value={set.weight}
-                  onChange={e => handleWeightChange(set.id, parseInt(e.target.value) || 0)}
-                  min="0"
+                  value={s.weight}
+                  min={0}
+                  onChange={e => handleWeightChange(s.id, +e.target.value)}
                 />
               </S.WeightValue>
               <S.WeightUnit>kg</S.WeightUnit>
+
               <S.RepValue>
                 <S.InputField
                   type="number"
-                  value={set.reps}
-                  onChange={e => handleRepsChange(set.id, parseInt(e.target.value) || 0)}
-                  min="0"
+                  value={s.reps}
+                  min={0}
+                  onChange={e => handleRepsChange(s.id, +e.target.value)}
+                  style={{
+                    // playing 상태일 때 reps 필드 강조
+                    backgroundColor: s.status === 'playing' ? '#fff3e0' : 'white',
+                    fontWeight: s.status === 'playing' ? 'bold' : 'normal'
+                  }}
                 />
               </S.RepValue>
               <S.RepUnit>회</S.RepUnit>
-              <S.StyledFaTrashCan as={FaTrashCan} onClick={() => handleDeleteSet(set.id)} />
+
+              {renderStatusIcons(s)}
+              
+              <S.StyledFaTrashCan
+                as={FaTrashCan}
+                onClick={() => handleDeleteSet(s.id)}
+              />
             </S.SetContainer>
           ))}
         </S.SetWrapper>
 
         <S.BottomButtonContainer>
-          <S.DeleteButtonContainer onClick={handleDeleteAll}>초기화</S.DeleteButtonContainer>
-          <S.AddButtonContainer onClick={handleSave}>저장</S.AddButtonContainer>
+          <S.DeleteButtonContainer onClick={handleDeleteAll}>
+            초기화
+          </S.DeleteButtonContainer>
+          <S.AddButtonContainer onClick={handleSave}>
+            저장
+          </S.AddButtonContainer>
         </S.BottomButtonContainer>
       </S.MobileContainer>
     </S.MobileWrapper>
-  );
-};
+  )
+}
 
 export default Mobile

@@ -1,6 +1,8 @@
 import styled  from 'styled-components'
 import { FaCirclePlus, FaTrashCan } from "react-icons/fa6";
+import { FaCheck } from "react-icons/fa";
 import { MdOutlineCancel } from "react-icons/md";
+import { FaPlay, FaStop } from "react-icons/fa";
 
 export const S = {
     MobileWrapper: styled.div`
@@ -80,7 +82,8 @@ export const S = {
           font-size: 50px;
         }
         p {
-          font-size: 24px;
+          margin-left: 1vw;
+          font-size: 28px;
         }
     `,
 
@@ -232,4 +235,20 @@ BottomButtonContainer: styled.div`
       font-size: 24px;
       cursor: pointer;
     `,
+    StyledCheckIcon: styled(FaCheck)`
+      font-size: 24px;
+      cursor: pointer;
+    `,
+
+    StyledFaPlayIcon: styled(FaPlay)`
+      font-size: 24px;
+      cursor: pointer;
+    
+    `,
+
+    StyledFaStopIcon: styled(FaStop)`
+      font-size: 24px;
+      cursor: pointer;
+    
+    `
 }

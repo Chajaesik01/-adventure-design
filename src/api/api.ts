@@ -73,8 +73,6 @@ const useExerciseRecord = (
     fetchData()
   }, [exerciseName, targetDate])
 
-  
-
   // 2. 저장 함수
   const saveSets = async (name:string, newSets: ExerciseSet[]) => {
     const exercisesRef = ref(database, 'exercises')
@@ -157,7 +155,7 @@ const useExerciseRecord = (
     loading,
     setSets,
     saveSets,
-    deleteSets
+    deleteSets,
   }
 }
 

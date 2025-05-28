@@ -46,7 +46,8 @@ export const S = {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 20%;
+        min-width: 20%;
+
         height: 100%;
         border-radius:10px;
         border: 1px solid black;
