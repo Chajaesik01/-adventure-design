@@ -11,7 +11,9 @@ import { getTodayDateKST } from '../../utils/getTodayDateKST'
 import { S } from './StyledMobile'
 import { LoadingContainer, Spinner } from '../../loading/Loading'
 import { useDistanceData } from '../../api/useDistanceData'
-import { useJumsuData } from '../../api/useJumsuData'
+import soundMp3 from '../../assets/sound.mp3';
+import { useMusceleData } from '../../api/useMuscleData'
+import useSound from 'use-sound'
 
 // 운동 상태 타입 정의
 type ExerciseStatus = 'ready' | 'playing' | 'completed'
@@ -34,7 +36,9 @@ const Mobile = () => {
   )
 
   const { distance } = useDistanceData();
-  const { jumsu } = useJumsuData();
+  const { muscle } = useMusceleData(); 
+  const [jumsu, setJumsu] = useState(0);
+  const [sound] = useSound(soundMp3);
 
   const [sets, setSets] = useState<SetItem[]>([])
   const [prevDistance, setPrevDistance] = useState<number>(0)
@@ -57,6 +61,14 @@ const Mobile = () => {
 
     setSets(initial)
   }, [loading])
+
+  // jumsu 계산을 위한 별도 useEffect 추가
+  useEffect(() => {
+    if (muscle > 0 && distance > 0) {
+      const newJumsu = Math.floor((muscle / distance) * 100);
+      setJumsu(newJumsu);
+    }
+  }, [muscle, distance]);
 
   // ── 2) distance 값 변경 감지하여 playing 상태 세트의 reps 증가 ─────────────────
   useEffect(() => {
@@ -101,6 +113,14 @@ const Mobile = () => {
       )
     )
   }
+
+  // 소리 재생 수정
+  useEffect(() => {
+    if (jumsu >= 60) {
+      console.log("소리 출력");
+      sound();
+    }
+  }, [jumsu, sound]);
 
   // ── 운동 완료 (Check 버튼) ─────────────────────────
   const handleCompleteSet = (id: number) => {
