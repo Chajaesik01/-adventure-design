@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { S } from './StyledMain';
 import ExerciseModal from '../../components/modal/ExcerciseModal';
 import { useNavigate } from 'react-router-dom';
+import useExerciseRecord from '../../api/api';
 
 const Main = () => {
 
@@ -9,6 +10,7 @@ const Main = () => {
     const jumsu = 70;
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [exerciseName, setExerciseName] = useState<string>('');
+    const { totalRecordCount, consecutiveDays } = useExerciseRecord('','');
 
     const handleOpenModal = (): void => {
         setIsOpen(true);
@@ -42,9 +44,9 @@ const Main = () => {
             </S.MainTitleWrapper>
             <S.MainHeader>
                 <p>
-                    👍월 <span>10회</span> 운동했어요<br/>
+                    👍월 <span>{totalRecordCount}회</span> 운동했어요<br/>
                     🔥총 <span>506</span>분동안 불태웠어요<br/>
-                    🏃<span>3</span>일동안 꾸준히 운동하고 있어요<br/>
+                    🏃<span>{consecutiveDays}</span>일동안 꾸준히 운동하고 있어요<br/>
                 </p>
             </S.MainHeader>
             <S.MainBottom $jumsu={jumsu}>

@@ -1,8 +1,9 @@
+import WearableAgreement from "../../components/WearableAgreement"
 
 
 const Pc = () => {
   return (
-    <div>Pc</div>
+    <WearableAgreement/>
   )
 }
 

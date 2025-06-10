@@ -19,7 +19,7 @@ interface ExerciseRecord {
 // 🔷 운동 항목 타입
 interface ExerciseItem {
   name: string
-  records?: ExerciseRecord[]
+  records: ExerciseRecord[]
 }
 
 // 🔷 훅 리턴 타입
@@ -29,15 +29,56 @@ interface UseExerciseRecordResult {
   setSets: React.Dispatch<React.SetStateAction<ExerciseSet[]>>
   saveSets: (name:string, newSets: ExerciseSet[]) => Promise<void>
   deleteSets: () => Promise<void>
+  totalRecordCount: number
+  consecutiveDays: number
 }
 
 const useExerciseRecord = (
   exerciseName: string,
-  targetDate: string
+  targetDate: string,
 ): UseExerciseRecordResult => {
   const [sets, setSets] = useState<ExerciseSet[]>([])
-  //const [jumsu, setJumsu] = useState<number>(0)
+  const [totalRecordCount, setTotalRecordCount] = useState<number>(0)
+  const [consecutiveDays, setConsecutiveDays] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(true)
+
+  // 연속된 날짜 계산 함수
+  const calculateConsecutiveDays = (exerciseList: ExerciseItem[]): number => {
+    // 모든 운동 기록의 날짜를 수집하고 중복 제거
+    const allDates = new Set<string>()
+    
+    exerciseList.forEach(exercise => {
+      exercise.records?.forEach(record => {
+        allDates.add(record.date)
+      })
+    })
+
+    if (allDates.size === 0) return 0
+
+    // 날짜를 정렬
+    const sortedDates = Array.from(allDates).sort()
+    
+    let maxConsecutive = 1
+    let currentConsecutive = 1
+    
+    for (let i = 1; i < sortedDates.length; i++) {
+      const currentDate = new Date(sortedDates[i])
+      const previousDate = new Date(sortedDates[i - 1])
+      
+      // 날짜 차이가 1일인지 확인
+      const timeDiff = currentDate.getTime() - previousDate.getTime()
+      const dayDiff = timeDiff / (1000 * 3600 * 24)
+      
+      if (dayDiff === 1) {
+        currentConsecutive++
+        maxConsecutive = Math.max(maxConsecutive, currentConsecutive)
+      } else {
+        currentConsecutive = 1
+      }
+    }
+    
+    return maxConsecutive
+  }
 
   // 1. 데이터 불러오기
   useEffect(() => {
@@ -48,10 +89,23 @@ const useExerciseRecord = (
         const snapshot = await get(exercisesRef)
         if (snapshot.exists()) {
           const data = snapshot.val() as Record<string, ExerciseItem>
-          //const keys = Object.keys(data)
           const exerciseList = Object.values(data)
 
           const targetExercise = exerciseList.find(ex => ex.name === exerciseName)
+
+          // 총 운동 기록 수 계산
+          const totalCount = exerciseList.reduce((total, exercise) => {
+            return total + (exercise.records?.length || 0)
+          }, 0)
+          
+          // 연속된 날짜 수 계산
+          const consecutive = calculateConsecutiveDays(exerciseList)
+          
+          setTotalRecordCount(totalCount)
+          setConsecutiveDays(consecutive)
+          
+          console.log('총 운동 기록 수:', totalCount)
+          console.log('최대 연속 운동 일수:', consecutive)
 
           if (targetExercise) {
             const targetRecord = targetExercise.records?.find(r => r.date === targetDate)
@@ -61,10 +115,14 @@ const useExerciseRecord = (
           }
         } else {
           setSets([])
+          setTotalRecordCount(0)
+          setConsecutiveDays(0)
         }
       } catch (error) {
         console.error("데이터 로딩 실패:", error)
         setSets([])
+        setTotalRecordCount(0)
+        setConsecutiveDays(0)
       } finally {
         setLoading(false)
       }
@@ -156,6 +214,8 @@ const useExerciseRecord = (
     setSets,
     saveSets,
     deleteSets,
+    totalRecordCount,
+    consecutiveDays
   }
 }
 

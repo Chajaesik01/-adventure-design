@@ -9,7 +9,7 @@ export const useDistanceData = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    
+
     // exercisesData/distance 경로 참조
     const distanceRef = ref(database, 'exercisesData/distance');
     
